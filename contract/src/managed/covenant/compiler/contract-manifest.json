@@ -1,0 +1,76 @@
+{
+  "manifest-version": "1",
+  "compiler-version": "0.35.0",
+  "compiler-commit": "debb05f9414b9d1e176741c2be289bb32233f0fc",
+  "language-version": "0.27.0",
+  "runtime-version": "0.20.0",
+  "compiler": {
+    "type": "directory",
+    "contract-info.json": {
+      "type": "file",
+      "size": 15705,
+      "hash": "e9aec6bd80e6f2a58b8a320e224b03c208bd3878ac89187c9132b1bf2faaedc8"
+    }
+  },
+  "contract": {
+    "type": "directory",
+    "index.d.ts": {
+      "type": "file",
+      "size": 11390,
+      "hash": "8641727fc10e2cc4421f65d72551810f0b8e7834689abfc2f0e20abac18782f0"
+    },
+    "index.js": {
+      "type": "file",
+      "size": 197298,
+      "hash": "9467097709c6e21f22fa34687d5630f612c4d8b843c5ed8ef28b374eb5c40018"
+    },
+    "index.js.map": {
+      "type": "file",
+      "size": 8748,
+      "hash": "a63d17f12c3e58b796efe273a1c042b91e5786fe030acab6f04d4db939726abe"
+    }
+  },
+  "zkir": {
+    "type": "directory",
+    "attestCollateral.zkir": {
+      "type": "file",
+      "size": 3893,
+      "hash": "60cb3a7a904b7554e7411d7371b57c0e64750604bf05f46c80dab932fb1b9b7d"
+    },
+    "fundLoan.zkir": {
+      "type": "file",
+      "size": 6941,
+      "hash": "f82acd73e7395c1cc57aea546ee59bc7eccd32cf78e54a6f43f6e2023c988df5"
+    },
+    "postPrice.zkir": {
+      "type": "file",
+      "size": 3405,
+      "hash": "31d5cffc700964fa8da502466198573180bf72f1613bbed52f31951048b52dc2"
+    },
+    "registerCustodian.zkir": {
+      "type": "file",
+      "size": 2925,
+      "hash": "b1e839d5a3f0f93731a2884fb0070e0a3cfddcc0c98d14f0d0713adb3bbb792e"
+    },
+    "registerOracle.zkir": {
+      "type": "file",
+      "size": 2885,
+      "hash": "849188d9e89685cfcecce4841289acd89284ae9193cf9316d1a6939aec58991f"
+    },
+    "repayLoan.zkir": {
+      "type": "file",
+      "size": 11467,
+      "hash": "05f81bdb6213215b174af27694a3c01d9dbfa30b3fc662ac91c54014e63e0b29"
+    },
+    "requestLoan.zkir": {
+      "type": "file",
+      "size": 12645,
+      "hash": "d8bfb4498efad85001b782b9e2d054ba1f95e97ce7315e889707d06bb138473c"
+    },
+    "triggerLiquidation.zkir": {
+      "type": "file",
+      "size": 15241,
+      "hash": "932c4fdac154ae3026bda2beb275b3600f6a9dc1bad3c10b90f8db4c50a824b7"
+    }
+  }
+}
