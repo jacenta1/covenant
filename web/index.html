@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COVENANT // Private Credit Desk</title>
+<meta name="description" content="Private debt covenants on Midnight: hidden collateral, provable maintenance ratios, sealed liquidation receipts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./src/style.css">
+<script>
+  (function () {
+    var root = document.documentElement;
+    function note(msg) {
+      root.dataset.err = (root.dataset.err ? root.dataset.err + ' | ' : '') + String(msg);
+    }
+    window.addEventListener('error', function (e) { note(e.message || 'error'); });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e.reason;
+      note((r && r.message) || String(r));
+    });
+  })();
+</script>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="tape" aria-label="Oracle tape">
+  <div class="tape__tag">ORCL</div>
+  <div class="tape__window">
+    <div class="tape__track" id="tapeTrack"></div>
+  </div>
+  <div class="tape__clock mono" id="clock">00:00:00.000</div>
+</header>
+
+<nav class="rail" aria-label="Sections">
+  <div class="rail__mark">
+    <span class="mono">CVN</span>
+    <small>credit desk</small>
+  </div>
+  <a class="rail__go is-on" href="#desk" data-sec="desk"><kbd>F1</kbd>Desk</a>
+  <a class="rail__go" href="#collateral" data-sec="collateral"><kbd>F2</kbd>Collateral</a>
+  <a class="rail__go" href="#oracle" data-sec="oracle"><kbd>F3</kbd>Oracle</a>
+  <a class="rail__go" href="#ledger" data-sec="ledger"><kbd>F4</kbd>Ledger</a>
+  <a class="rail__go" href="#execution" data-sec="execution"><kbd>F5</kbd>Execution</a>
+  <div class="rail__foot">
+    <div class="kv"><span>NET</span><b class="mono">midnight/local</b></div>
+    <div class="kv"><span>RUNTIME</span><b class="mono">compact 0.20</b></div>
+    <button class="toggle" id="muteBtn" type="button" aria-pressed="false">AUDIO ON</button>
+  </div>
+</nav>
+
+<main class="board">
+
+  <section class="pane pane--wide" id="desk">
+    <div class="pane__hd"><h2>Facility CVN-0001</h2><span class="mono dim">LOAN / PRIVATE TERMS</span><span class="flag" id="phaseFlag">FUNDED</span></div>
+    <div class="readouts">
+      <div class="ro"><label>Notional (hidden)</label><output class="mono" id="roDebt">50,000</output></div>
+      <div class="ro"><label>Collateral units</label><output class="mono" id="roUnits">100</output></div>
+      <div class="ro"><label>Mark px</label><output class="mono" id="roPx">1,000.00</output></div>
+      <div class="ro"><label>Covenant floor</label><output class="mono" id="roFloor">150.00%</output></div>
+      <div class="ro ro--key"><label>Health ratio</label><output class="mono" id="roHealth">200.00%</output></div>
+      <div class="ro"><label>Headroom</label><output class="mono" id="roHead">+50.00 pp</output></div>
+    </div>
+    <div class="gauge" aria-label="Health ratio gauge">
+      <div class="gauge__scale mono"><span>0%</span><span>100%</span><span>200%</span><span>300%</span></div>
+      <div class="gauge__bar">
+        <div class="gauge__fill" id="gaugeFill"></div>
+        <div class="gauge__line" id="gaugeLine"><span class="mono">COV 150%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane" id="collateral">
+    <div class="pane__hd"><h2>Collateral</h2><span class="mono dim">CUSTODIAN ATTESTED</span></div>
+    <table class="grid">
+      <tbody>
+        <tr><th>Asset</th><td class="mono">CCY#1</td></tr>
+        <tr><th>Units</th><td><input class="cell mono" id="inUnits" type="number" min="1" value="100"></td></tr>
+        <tr><th>Notional</th><td><input class="cell mono" id="inDebt" type="number" min="1" value="50000"></td></tr>
+        <tr><th>Floor bps</th><td><input class="cell mono" id="inFloor" type="number" min="10000" step="500" value="15000"></td></tr>
+        <tr><th>Seal (preview)</th><td class="mono dim" id="sealPrev">--</td></tr>
+      </tbody>
+    </table>
+    <p class="fine">Seal is a local SHA-256 preview, not the contract commitment.</p>
+  </section>
+
+  <section class="pane" id="oracle">
+    <div class="pane__hd"><h2>Oracle</h2><span class="mono dim">SHOCK TEST</span></div>
+    <div class="shock">
+      <label for="inPx">Mark px</label>
+      <input id="inPx" type="range" min="400" max="1600" step="5" value="1000">
+      <output class="mono" id="pxOut">1000</output>
+    </div>
+    <table class="grid grid--rows">
+      <thead><tr><th>Shock</th><th>Px</th><th>Ratio</th><th>State</th></tr></thead>
+      <tbody id="shockRows"></tbody>
+    </table>
+  </section>
+
+  <section class="pane" id="ledger">
+    <div class="pane__hd"><h2>Public ledger view</h2><span class="mono dim">WHAT THE CHAIN SEES</span></div>
+    <table class="grid grid--rows">
+      <thead><tr><th>Field</th><th>Visibility</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>loan id</td><td class="ok">public</td><td class="mono dim" id="lgId">--</td></tr>
+        <tr><td>terms commitment</td><td class="ok">public</td><td class="mono dim">bytes32</td></tr>
+        <tr><td>notional</td><td class="warn">sealed</td><td class="mono">########</td></tr>
+        <tr><td>collateral units</td><td class="warn">sealed</td><td class="mono">########</td></tr>
+        <tr><td>ratio &gt;= floor</td><td class="ok">proved</td><td class="mono" id="lgProof">true</td></tr>
+        <tr><td>status</td><td class="ok">public</td><td class="mono" id="lgStatus">FUNDED</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="pane pane--wide" id="execution">
+    <div class="pane__hd">
+      <h2>Execution</h2>
+      <span class="mono dim">COMPILED CONTRACT / IN-BROWSER</span>
+      <span class="runstate mono" id="runState" role="status" aria-live="polite">IDLE</span>
+    </div>
+    <div class="exec">
+      <div class="exec__ctl">
+        <button class="go" id="runBtn" type="button">EXECUTE SESSION <kbd>ENTER</kbd></button>
+        <p class="fine">Deploys the covenant contract through compact-runtime in this tab, registers oracle and custodian, books, funds and repays a private loan. Every line below is printed by real circuit calls.</p>
+        <div class="kv"><span>lines</span><b class="mono" id="lineCount">0</b></div>
+        <div class="kv"><span>elapsed</span><b class="mono" id="elapsed">0 ms</b></div>
+      </div>
+      <pre class="tty mono" id="tty" aria-label="Contract output"></pre>
+    </div>
+  </section>
+
+</main>
+
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>
