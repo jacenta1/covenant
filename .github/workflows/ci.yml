@@ -1,0 +1,80 @@
+name: covenant ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  circuits:
+    name: circuits (compactc 0.35.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install compact cli
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: pin toolchain
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: compact update 0.35.0 && compact compile --version
+
+      - name: prove - generate keys
+        run: |
+          compact compile contract/src/covenant.compact /tmp/covenant-keys
+          ls -la /tmp/covenant-keys/keys
+
+      - name: managed output matches source
+        run: |
+          compact compile --skip-zk contract/src/covenant.compact /tmp/covenant-js
+          diff -r -x '*.map' /tmp/covenant-js/contract contract/src/managed/covenant/contract
+
+  desk:
+    name: desk (node 22)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run demo
+      - run: npm run build:web
+
+  terminal-release:
+    name: terminal release
+    needs: [circuits, desk]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run build:web
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4
